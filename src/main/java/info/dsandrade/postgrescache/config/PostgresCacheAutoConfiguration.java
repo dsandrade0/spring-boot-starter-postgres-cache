@@ -1,5 +1,6 @@
 package info.dsandrade.postgrescache.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import info.dsandrade.postgrescache.properties.PostgresCacheProperties;
 import info.dsandrade.postgrescache.service.PostgresCacheService;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -21,7 +22,7 @@ public class PostgresCacheAutoConfiguration {
     }
 
     @Bean
-    public PostgresCacheService postgresCacgeService(JdbcTemplate jdbcTemplate, PostgresCacheProperties props) {
-        return new PostgresCacheService(jdbcTemplate, props);
+    public PostgresCacheService postgresCacgeService(JdbcTemplate jdbcTemplate, PostgresCacheProperties props, ObjectMapper objectMapper) {
+        return new PostgresCacheService(jdbcTemplate, props, objectMapper);
     }
 }

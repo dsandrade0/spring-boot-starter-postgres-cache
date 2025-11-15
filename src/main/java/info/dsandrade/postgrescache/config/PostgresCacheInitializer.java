@@ -19,7 +19,7 @@ public class PostgresCacheInitializer {
 
     @PostConstruct
     public void init() {
-        logger.info("Initializing Postgres Redis table");
+        logger.debug("Initializing Postgres Redis table");
         String sql = String.format("""
             CREATE UNLOGGED TABLE IF NOT EXISTS %s.%s (
                 key TEXT PRIMARY KEY,
