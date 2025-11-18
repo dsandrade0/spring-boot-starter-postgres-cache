@@ -4,54 +4,94 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- IDENTIDADE DO ARTEFATO -->
     <groupId>info.dsandrade</groupId>
     <artifactId>spring-boot-starter-postgres-cache</artifactId>
-    <version>1.0.0</version>
+    <version>0.0.1</version>
+    <packaging>jar</packaging>
 
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>A lightweight Spring Boot starter that provides a high-performance cache implementation backed by PostgreSQL.</description>
+    <url>https://github.com/dsandrade0/spring-boot-starter-postgres-cache</url>
+    <inceptionYear>2025</inceptionYear>
+
+    <!-- LICENÇA -->
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <!-- SCM -->
+    <scm>
+        <connection>scm:git:https://github.com/dsandrade0/spring-boot-starter-postgres-cache.git</connection>
+        <developerConnection>scm:git:https://github.com/dsandrade0/spring-boot-starter-postgres-cache.git</developerConnection>
+        <url>https://github.com/dsandrade0/spring-boot-starter-postgres-cache</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <!-- DESENVOLVEDOR -->
+    <developers>
+        <developer>
+            <id>dsandrade</id>
+            <name>Diego Andrade</name>
+            <email>didi.ufs@gmail.com</email>
+            <url>https://dsandrade.info</url>
+        </developer>
+    </developers>
+
+    <!-- PARENT BOM -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
-        <version>3.4.5</version>
+        <version>3.3.0</version>
         <relativePath/>
     </parent>
 
+    <!-- PROPRIEDADES -->
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
         <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <jackson.version>2.17.1</jackson.version>
     </properties>
 
+    <!-- DEPENDÊNCIAS -->
     <dependencies>
-        <!-- Auto-configuração básica -->
+
+        <!-- Autoconfigure -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
-            <scope>provided</scope>
         </dependency>
 
-        <!-- JDBC (opcional, depende do projeto que usa o starter) -->
+        <!-- JDBC -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jdbc</artifactId>
-            <optional>true</optional>
         </dependency>
 
-        <!-- Jackson for JSON (ObjectMapper) -->
+        <!-- Jackson (mantenha as versões gerenciadas pelo Spring Boot) -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <optional>true</optional>
         </dependency>
 
-        <!-- Testes -->
+        <!-- TESTES -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
 
-        <!-- Testcontainers: core + JUnit 5 + PostgreSQL module -->
+        <!-- Testcontainers -->
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
@@ -67,27 +107,114 @@
             <artifactId>postgresql</artifactId>
             <scope>test</scope>
         </dependency>
-
-        <!-- PostgreSQL JDBC driver for tests -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <scope>test</scope>
         </dependency>
-    </dependencies>
 
+    </dependencies>
+    <!-- BUILD -->
     <build>
         <plugins>
+
+            <!-- DESABILITA O DEPLOY LEGADO DO MAVEN (necessário para Central Publishing) -->
             <plugin>
-                <groupId>org.sonatype.central</groupId>
-                <artifactId>central-publishing-maven-plugin</artifactId>
-                <version>0.9.0</version>
-                <extensions>true</extensions>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>3.1.2</version>
                 <configuration>
-                    <publishingServerId>central</publishingServerId>
+                    <skip>true</skip>
                 </configuration>
             </plugin>
+
+            <!-- sources.jar -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.3.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals><goal>jar</goal></goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- javadoc.jar -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.7.0</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals><goal>jar</goal></goals>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
-        <finalName>spring-boot-starter-postgres-cache</finalName>
     </build>
+
+    <!-- PERFIL PARA PUBLICAÇÃO -->
+    <profiles>
+        <profile>
+            <id>central-release</id>
+
+            <build>
+                <plugins>
+
+                    <!-- GPG SIGN -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>3.2.3</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals><goal>sign</goal></goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!-- SONATYPE CENTRAL PUBLISHING -->
+                    <plugin>
+                        <groupId>io.github.mavenplugins</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>1.1.1</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>central</publishingServerId>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>publish-to-central</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>publish</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <dependencies>
+                            <dependency>
+                                <groupId>com.fasterxml.jackson.core</groupId>
+                                <artifactId>jackson-core</artifactId>
+                                <version>${jackson.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>com.fasterxml.jackson.core</groupId>
+                                <artifactId>jackson-databind</artifactId>
+                                <version>${jackson.version}</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+
+                </plugins>
+            </build>
+
+        </profile>
+    </profiles>
+
 </project>
