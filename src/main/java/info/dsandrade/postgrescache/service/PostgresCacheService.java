@@ -33,18 +33,24 @@ public class PostgresCacheService {
      * @param duration  The duration for which the key-value pair remains valid. Determines the TTL.
      */
     public void set(String key, String value, Duration duration) {
-        String sql = String.format(""" 
-                INSERT INTO %s.%s (key, value, ttl) VALUES (?, ?::jsonb, ?)
-                ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, ttl = EXCLUDED.ttl
-                """,
-                props.getSchema(), props.getTableName());
-
         LocalDateTime ttl = null;
         if (duration != null) {
             ttl = LocalDateTime.now().plus(duration);
         }
 
-        jdbcTemplate.update(sql, key, value, ttl);
+        if (props.isH2()) {
+            String sql = String.format("""
+                    INSERT INTO %s (key, value, ttl) VALUES (?, ?, ?)
+                    ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, ttl = EXCLUDED.ttl
+                    """, props.getTableName());
+            jdbcTemplate.update(sql, key, value, ttl);
+        } else {
+            String sql = String.format("""
+                    INSERT INTO %s.%s (key, value, ttl) VALUES (?, ?::jsonb, ?)
+                    ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, ttl = EXCLUDED.ttl
+                    """, props.getSchema(), props.getTableName());
+            jdbcTemplate.update(sql, key, value, ttl);
+        }
     }
 
     /**
@@ -75,10 +81,18 @@ public class PostgresCacheService {
      */
     public <T> Optional<T> get(String key, Class<T> clazz) {
         try {
-            String sql = String.format(
-                    "SELECT value FROM %s.%s WHERE key = ? AND (ttl IS NULL OR ttl > now())",
-                    props.getSchema(), props.getTableName()
-            );
+            String sql;
+            if (props.isH2()) {
+                sql = String.format(
+                        "SELECT value FROM %s WHERE key = ? AND (ttl IS NULL OR ttl > CURRENT_TIMESTAMP)",
+                        props.getTableName()
+                );
+            } else {
+                sql = String.format(
+                        "SELECT value FROM %s.%s WHERE key = ? AND (ttl IS NULL OR ttl > now())",
+                        props.getSchema(), props.getTableName()
+                );
+            }
 
             String json = jdbcTemplate.queryForObject(sql, String.class, key);
             if (json == null) {
@@ -94,12 +108,13 @@ public class PostgresCacheService {
         }
     }
 
-    /**
-     * Deletes a key-value pair from the database.
-     * @param key
-     */
     public void delete(String key) {
-        String sql = String.format("DELETE FROM %s.%s WHERE key = ?", props.getSchema(), props.getTableName());
+        String sql;
+        if (props.isH2()) {
+            sql = String.format("DELETE FROM %s WHERE key = ?", props.getTableName());
+        } else {
+            sql = String.format("DELETE FROM %s.%s WHERE key = ?", props.getSchema(), props.getTableName());
+        }
         jdbcTemplate.update(sql, key);
     }
 }

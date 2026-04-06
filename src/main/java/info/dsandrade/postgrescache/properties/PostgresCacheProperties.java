@@ -6,6 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class PostgresCacheProperties {
     private String tableName = "mem_cache";
     private String schema = "public";
+    private boolean h2 = false;
 
     public String getTableName() {
         return tableName;
@@ -21,5 +22,13 @@ public class PostgresCacheProperties {
 
     public void setSchema(String schema) {
         this.schema = schema;
+    }
+
+    public boolean isH2() {
+        return h2;
+    }
+
+    public void setH2(boolean h2) {
+        this.h2 = h2;
     }
 }

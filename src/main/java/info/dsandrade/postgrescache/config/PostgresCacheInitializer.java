@@ -20,13 +20,25 @@ public class PostgresCacheInitializer {
     @PostConstruct
     public void init() {
         logger.debug("Initializing Postgres Redis table");
-        String sql = String.format("""
-            CREATE UNLOGGED TABLE IF NOT EXISTS %s.%s (
-                key TEXT PRIMARY KEY,
-                value jsonb,
-                ttl TIMESTAMP
-            )
-        """, props.getSchema(), props.getTableName());
+        String sql = "";
+        if (props.isH2()) {
+
+            sql = String.format("""
+                        CREATE TABLE %s (
+                            "key" TEXT PRIMARY KEY,
+                            "value" TEXT,
+                            ttl TIMESTAMP
+                        )
+                    """, props.getTableName());
+        } else {
+            sql = String.format("""
+                        CREATE UNLOGGED TABLE IF NOT EXISTS %s.%s (
+                            key TEXT PRIMARY KEY,
+                            value jsonb,
+                            ttl TIMESTAMP
+                        )
+                    """, props.getSchema(), props.getTableName());
+        }
         jdbcTemplate.execute(sql);
     }
 }
